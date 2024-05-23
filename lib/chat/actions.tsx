@@ -36,6 +36,12 @@ import { SpinnerMessage, UserMessage } from '@/components/stocks/message'
 import { Chat, Message } from '@/lib/types'
 import { auth } from '@/auth'
 
+
+import {OpenAI as OpenaiClient} from 'openai';
+const client = new OpenaiClient({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
 async function confirmPurchase(symbol: string, price: number, amount: number) {
   'use server'
 
@@ -125,6 +131,56 @@ async function submitUserMessage(content: string) {
 
   let textStream: undefined | ReturnType<typeof createStreamableValue<string>>
   let textNode: undefined | React.ReactNode
+
+
+
+  const status = createStreamableUI('thread.init');
+  const text = createStreamableUI('');
+  const add = await client.beta.threads.messages.create(aiState.get().chatId,{
+    role:"user",
+    content:content
+  })
+  
+  const run = await client.beta.threads.runs.create(aiState.get().chatId,{
+    assistant_id:process.env.ASSISTANT_ID?process.env.ASSISTANT_ID:""
+  })
+
+
+  let jobs = [run]
+
+    while (jobs.length > 0) {
+      const latestRun = jobs.shift();
+
+      if (latestRun) {
+        for await (const delta of latestRun.) {
+          const { data, event } = delta;
+
+          status.update(event);
+
+          if (event === 'thread.created') {
+            THREAD_ID = data.id;
+          } else if (event === 'thread.run.created') {
+            RUN_ID = data.id;
+          } else if (event === 'thread.message.delta') {
+            data.delta.content?.map(part => {
+              if (part.type === 'text') {
+                if (part.text) {
+                  text.append(part.text.value);
+                }
+              }
+            });
+          } else if (event === 'thread.run.failed') {
+            console.log(data);
+          }
+        }
+      }
+    }
+
+    status.done();
+    text.done();
+
+
+  
 
   const result = await streamUI({
     model: openai('gpt-3.5-turbo'),
@@ -527,6 +583,8 @@ export const AI = createAI<AIState, UIState>({
       const createdAt = new Date()
       const userId = session.user.id as string
       const path = `/chat/${chatId}`
+
+      console.log('state', state)
 
       const firstMessageContent = messages[0].content as string
       const title = firstMessageContent.substring(0, 100)
