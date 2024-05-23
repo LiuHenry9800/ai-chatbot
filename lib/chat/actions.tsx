@@ -164,7 +164,7 @@ async function submitUserMessage(content: string) {
               if (part.type === 'text') {
                 if (part.text) {
                   text.append(part.text.value);
-                  console.log('text', text.value)
+                  console.log('text', part.text.value)
                 }
               }
             });
@@ -174,6 +174,7 @@ async function submitUserMessage(content: string) {
         }
       }
     }
+
     status.done();
     text.done();
     console.log('text', text)
@@ -182,8 +183,8 @@ async function submitUserMessage(content: string) {
 
   return {
     id: nanoid(),
-    status: status.value,
-    text: text.value,
+    // status: status.value,
+    display: text.value,
   };
 
 }
