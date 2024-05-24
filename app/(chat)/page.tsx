@@ -20,7 +20,7 @@ export default async function IndexPage() {
   const missingKeys = await getMissingKeys()
 
   const thread = await client.beta.threads.create()
-  // console.log('thread.id', thread.id)
+  console.log('thread.id', thread.id)
 
   return (
     <AI initialAIState={{ chatId: thread.id, messages: [] }}>

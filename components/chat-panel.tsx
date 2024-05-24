@@ -85,7 +85,7 @@ export function ChatPanel({
                   const responseMessage = await submitUserMessage(
                     example.message
                   )
-                  // console.log('responseMessage', responseMessage)
+                  console.log('responseMessage', responseMessage)
                   setMessages(currentMessages => [
                     ...currentMessages,
                     responseMessage

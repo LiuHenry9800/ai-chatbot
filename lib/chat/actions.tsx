@@ -126,7 +126,7 @@ async function uploadFile(data: FormData) {
 
     // Create your File object
     const uploadFile = new File([blob], fileName, { type: fileMime }); 
-    // console.log('file', file)
+    console.log('file', file)
     let openaiFile = await client.files.create({
       file:uploadFile,
       purpose: "fine-tune",
@@ -161,7 +161,7 @@ async function submitUserMessage(content: string,fileObj:{fileID:string}|null) {
   })
   const status = createStreamableUI('thread.init');
   const text = createStreamableUI('');
-  // console.log('fileID', fileObj)
+  console.log('fileID', fileObj)
 
   let threadID = aiState.get().chatId
   let runId
@@ -188,7 +188,7 @@ async function submitUserMessage(content: string,fileObj:{fileID:string}|null) {
           const { data, event } = delta;
 
           status.update(event);
-          // console.log('event', event)
+          console.log('event', event)
 
           if (event === 'thread.created') {
             threadID = data.id;
@@ -199,12 +199,12 @@ async function submitUserMessage(content: string,fileObj:{fileID:string}|null) {
               if (part.type === 'text') {
                 if (part.text) {
                   text.append(part.text.value);
-                  // console.log('text', part.text.value)
+                  console.log('text', part.text.value)
                 }
               }
             });
           } else if (event === 'thread.run.failed') {
-            // console.log(data);
+            console.log(data);
           }
         }
       }
@@ -212,7 +212,7 @@ async function submitUserMessage(content: string,fileObj:{fileID:string}|null) {
 
     status.done();
     text.done();
-    // console.log('text', text)
+    // .log('text', text)
 
   })();
 
@@ -274,7 +274,7 @@ export const AI = createAI<AIState, UIState>({
       const userId = session.user.id as string
       const path = `/chat/${chatId}`
 
-      // console.log('state', state)
+      console.log('state', state)
 
       const firstMessageContent = messages[0].content as string
       const title = firstMessageContent.substring(0, 100)

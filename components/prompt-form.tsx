@@ -91,7 +91,7 @@ export function PromptForm({
           
           const responseMessage = await submitUserMessage(value,file)
           setFile("");
-          // console.log('first', responseMessage)
+          console.log('first', responseMessage)
           setMessages(currentMessages => [...currentMessages,responseMessage ])
         }}
       >
