@@ -34,7 +34,7 @@ export function PromptForm({
 
   const { submitUserMessage,uploadFile} = useActions()
   const [_, setMessages] = useUIState<typeof AI>()
-  const [file, setFile] = React.useState<string>(null);
+  const [file, setFile] = React.useState<string>("");
 
   React.useEffect(() => {
     if (inputRef.current) {
@@ -44,7 +44,7 @@ export function PromptForm({
   const addFile = async(event:React.ChangeEvent<HTMLInputElement>)=>{
     event.preventDefault()
     const files = event.target.files
-    if(files){
+    if(files&&files.length>0){
     
 
       let formData = new FormData();
@@ -88,7 +88,9 @@ export function PromptForm({
           ])
 
           // Submit and get response message
+          
           const responseMessage = await submitUserMessage(value,file)
+          setFile("");
           // console.log('first', responseMessage)
           setMessages(currentMessages => [...currentMessages,responseMessage ])
         }}
@@ -134,7 +136,7 @@ export function PromptForm({
                 variant="outline"
                 size="icon"
                 className="size-8 rounded-full bg-background p-0 sm:left-4"
-                disabled={file !== null}
+                disabled={file !== ""}
                 onClick={(e)=>{
                   e.preventDefault()
                   if(hiddenFileInput.current){

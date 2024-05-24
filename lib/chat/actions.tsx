@@ -161,7 +161,7 @@ async function submitUserMessage(content: string,fileObj:object) {
     await client.beta.threads.messages.create(aiState.get().chatId, {
       role: 'user',
       content: content,
-      attachments:[{file_id:fileObj.fileID,tools:[{type:"code_interpreter"},{type:"file_search"}]}]
+      attachments:fileObj?[{file_id:fileObj.fileID,tools:[{type:"code_interpreter"},{type:"file_search"}]}]:null
     });
 
     const run = await client.beta.threads.runs.create(threadID, {
