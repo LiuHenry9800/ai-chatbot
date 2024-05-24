@@ -30,6 +30,7 @@ export function PromptForm({
   const inputRef = React.useRef<HTMLTextAreaElement>(null)
   const { submitUserMessage } = useActions()
   const [_, setMessages] = useUIState<typeof AI>()
+  const [file, setFile] = React.useState<File | null>(null);
 
   React.useEffect(() => {
     if (inputRef.current) {
@@ -37,80 +38,113 @@ export function PromptForm({
     }
   }, [])
 
+  const addFile = async(event:React.ChangeEvent<HTMLInputElement>)=>{
+    const files = event.target.files
+    if(files){
+    setMessages(currentMessages => [
+      ...currentMessages,
+      {
+        id: nanoid(),
+        display: <UserMessage>{files[0].name+" has been sucessfully uploaded"}</UserMessage>
+      }
+    ])
+
+      setFile(files[0])
+    }
+  }
+
   return (
-    <form
-      ref={formRef}
-      onSubmit={async (e: any) => {
-        e.preventDefault()
+    <div>
+      <form
+        ref={formRef}
+        onSubmit={async (e: any) => {
+          e.preventDefault()
 
-        // Blur focus on mobile
-        if (window.innerWidth < 600) {
-          e.target['message']?.blur()
-        }
-
-        const value = input.trim()
-        setInput('')
-        if (!value) return
-
-        // Optimistically add user message UI
-        setMessages(currentMessages => [
-          ...currentMessages,
-          {
-            id: nanoid(),
-            display: <UserMessage>{value}</UserMessage>
+          // Blur focus on mobile
+          if (window.innerWidth < 600) {
+            e.target['message']?.blur()
           }
-        ])
 
-        // Submit and get response message
-        const responseMessage = await submitUserMessage(value)
-        console.log('first', responseMessage)
-        setMessages(currentMessages => [...currentMessages,responseMessage ])
-      }}
-    >
-      <div className="relative flex max-h-60 w-full grow flex-col overflow-hidden bg-background px-8 sm:rounded-md sm:border sm:px-12">
-        <Tooltip>
-          <TooltipTrigger asChild>
+          const value = input.trim()
+          setInput('')
+          if (!value) return
+
+          // Optimistically add user message UI
+          setMessages(currentMessages => [
+            ...currentMessages,
+            {
+              id: nanoid(),
+              display: <UserMessage>{value}</UserMessage>
+            }
+          ])
+
+          // Submit and get response message
+          const responseMessage = await submitUserMessage(value)
+          console.log('first', responseMessage)
+          setMessages(currentMessages => [...currentMessages,responseMessage ])
+        }}
+      >
+        <div className="relative flex max-h-60 w-full grow flex-col overflow-hidden bg-background px-8 sm:rounded-md sm:border sm:px-12">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="outline"
+                size="icon"
+                className="absolute left-0 top-[14px] size-8 rounded-full bg-background p-0 sm:left-4"
+                onClick={() => {
+                  router.push('/new')
+                }}
+              >
+                <IconPlus />
+                <span className="sr-only">New Chat</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>New Chat</TooltipContent>
+          </Tooltip>
+          <Textarea
+            ref={inputRef}
+            tabIndex={0}
+            onKeyDown={onKeyDown}
+            placeholder="Send a message."
+            className="min-h-[60px] w-full resize-none bg-transparent px-4 py-[1.3rem] focus-within:outline-none sm:text-sm"
+            autoFocus
+            spellCheck={false}
+            autoComplete="off"
+            autoCorrect="off"
+            name="message"
+            rows={1}
+            value={input}
+            onChange={e => setInput(e.target.value)}
+          />
+          <div className="absolute right-5 top-[13px] sm:right-4">
+
             <Button
               variant="outline"
               size="icon"
-              className="absolute left-0 top-[14px] size-8 rounded-full bg-background p-0 sm:left-4"
-              onClick={() => {
-                router.push('/new')
-              }}
+              type='submit'
+              className="size-8 rounded-full bg-background p-0 sm:left-4"
+              onClick={()=>{}}
             >
               <IconPlus />
-              <span className="sr-only">New Chat</span>
+              <input type='file' style={{}} onChange={addFile} form="sub-form"></input>
+              <span className="sr-only">Upload File</span>
             </Button>
-          </TooltipTrigger>
-          <TooltipContent>New Chat</TooltipContent>
-        </Tooltip>
-        <Textarea
-          ref={inputRef}
-          tabIndex={0}
-          onKeyDown={onKeyDown}
-          placeholder="Send a message."
-          className="min-h-[60px] w-full resize-none bg-transparent px-4 py-[1.3rem] focus-within:outline-none sm:text-sm"
-          autoFocus
-          spellCheck={false}
-          autoComplete="off"
-          autoCorrect="off"
-          name="message"
-          rows={1}
-          value={input}
-          onChange={e => setInput(e.target.value)}
-        />
-        <div className="absolute right-0 top-[13px] sm:right-4">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button type="submit" size="icon" disabled={input === ''}>
-                <IconArrowElbow />
-                <span className="sr-only">Send message</span>
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Send message</TooltipContent>
-          </Tooltip>
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button type="submit" size="icon" disabled={input === ''}>
+                  <IconArrowElbow />
+                  <span className="sr-only">Send message</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Send message</TooltipContent>
+            </Tooltip>
+          </div>
         </div>
-      </div>
-    </form>
+      </form>
+      <form>
+
+      </form>
+    </div>
   )
 }

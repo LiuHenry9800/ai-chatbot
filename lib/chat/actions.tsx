@@ -111,6 +111,11 @@ async function confirmPurchase(symbol: string, price: number, amount: number) {
   }
 }
 
+export async function uploadFile(data: FormData) {
+  "use server";
+  const file = data.get("fileUpload");
+  console.log(file);
+}
 async function submitUserMessage(content: string) {
   'use server'
 
@@ -188,6 +193,7 @@ async function submitUserMessage(content: string) {
   };
 
 }
+
 export type AIState = {
   chatId: string
   messages: Message[]
