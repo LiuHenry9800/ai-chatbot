@@ -115,6 +115,7 @@ async function confirmPurchase(symbol: string, price: number, amount: number) {
 
 async function uploadFile(data: FormData) {
   "use server";
+  try{
   const file = data.get("file");
   if (file instanceof File){
     // Create a blob from your fileContents string
@@ -133,13 +134,18 @@ async function uploadFile(data: FormData) {
 
     return {"fileID":openaiFile.id}
   }
+}
+catch(error){
+  console.log('error', error)
+
+}
 
 }
 
 
 async function submitUserMessage(content: string,fileObj:{fileID:string}|null) {
   'use server'
-
+  try{
   const aiState = getMutableAIState<typeof AI>()
 
   aiState.update({
@@ -215,6 +221,10 @@ async function submitUserMessage(content: string,fileObj:{fileID:string}|null) {
     // status: status.value,
     display: text.value,
   };
+}
+catch(error){
+  console.log('error', error)
+}
 
 }
 
