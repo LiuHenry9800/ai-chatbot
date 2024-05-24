@@ -111,11 +111,13 @@ async function confirmPurchase(symbol: string, price: number, amount: number) {
   }
 }
 
-export async function uploadFile(data: FormData) {
+async function uploadFile(data: FormData) {
   "use server";
-  const file = data.get("fileUpload");
+  const file = data.get("file");
   console.log(file);
 }
+
+
 async function submitUserMessage(content: string) {
   'use server'
 
@@ -207,7 +209,8 @@ export type UIState = {
 export const AI = createAI<AIState, UIState>({
   actions: {
     submitUserMessage,
-    confirmPurchase
+    confirmPurchase,
+    uploadFile
   },
   initialUIState: [],
   initialAIState: { chatId: nanoid(), messages: [] },

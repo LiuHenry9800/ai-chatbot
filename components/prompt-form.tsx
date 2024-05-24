@@ -6,7 +6,7 @@ import Textarea from 'react-textarea-autosize'
 import { useActions, useUIState } from 'ai/rsc'
 
 import { BotMessage, UserMessage } from './stocks/message'
-import { type AI,uploadFile } from '@/lib/chat/actions'
+import { type AI } from '@/lib/chat/actions'
 import { Button } from '@/components/ui/button'
 import { IconArrowElbow, IconPlus } from '@/components/ui/icons'
 import {
@@ -30,11 +30,9 @@ export function PromptForm({
   const router = useRouter()
   const { formRef, onKeyDown } = useEnterSubmit()
   const inputRef = React.useRef<HTMLTextAreaElement>(null)
-  const fileRef = React.useRef<HTMLFormElement>(null)
-  const [pending, startTransition] = React.useTransition();
   const hiddenFileInput = React.useRef<HTMLInputElement>(null);
 
-  const { submitUserMessage } = useActions()
+  const { submitUserMessage,uploadFile} = useActions()
   const [_, setMessages] = useUIState<typeof AI>()
   const [file, setFile] = React.useState<File | null>(null);
 
@@ -43,20 +41,23 @@ export function PromptForm({
       inputRef.current.focus()
     }
   }, [])
-
   const addFile = async(event:React.ChangeEvent<HTMLInputElement>)=>{
     event.preventDefault()
     const files = event.target.files
     if(files){
-    setMessages(currentMessages => [
-      ...currentMessages,
-      {
-        id: nanoid(),
-        display: <UserMessage>{files[0].name+" has been sucessfully uploaded"}</UserMessage>
-      }
-    ])
+    
 
       setFile(files[0])
+      let formData = new FormData();
+      formData.append('file', files[0]);
+      await uploadFile(formData);
+      setMessages(currentMessages => [
+        ...currentMessages,
+        {
+          id: nanoid(),
+          display: <UserMessage>{files[0].name+" has been sucessfully uploaded!"}</UserMessage>
+        }
+      ])
     }
   }
 
@@ -133,20 +134,18 @@ export function PromptForm({
                 variant="outline"
                 size="icon"
                 className="size-8 rounded-full bg-background p-0 sm:left-4"
-                form='file-form'
                 onClick={(e)=>{
-                e.preventDefault()
-                if(hiddenFileInput.current){
-                  hiddenFileInput.current.click();
+                  e.preventDefault()
+                  if(hiddenFileInput.current){
+                    hiddenFileInput.current.click();
+                  }
                 }
-              }}>
+              }>
                 <IconPlus />
                 <span className="sr-only">Upload File</span>
               </Button>
               <input
                 type="file"
-                form='file-form'
-
                 onChange={addFile}
                 ref={hiddenFileInput}
                 style={{display: 'none'}} // Make the file input element invisible
@@ -165,9 +164,9 @@ export function PromptForm({
           </div>
         </div>
       </form>
-      <form id="file-form" ref={fileRef} >
+      {/* <form id="file-form" ref={fileRef} onSubmit={onFileSubmit} >
               
-      </form>
+      </form> */}
     </div>
   )
 }
