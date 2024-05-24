@@ -37,6 +37,8 @@ import { Chat, Message } from '@/lib/types'
 import { auth } from '@/auth'
 import { AssistantResponse } from "ai"
 import {OpenAI as OpenaiClient} from 'openai';
+import fs from "fs";
+
 const client = new OpenaiClient({
   apiKey: process.env.OPENAI_API_KEY,
 });
@@ -114,11 +116,25 @@ async function confirmPurchase(symbol: string, price: number, amount: number) {
 async function uploadFile(data: FormData) {
   "use server";
   const file = data.get("file");
-  console.log(file);
+  // Create a blob from your fileContents string
+  const blob = new Blob([file], { type: 'text/plain' });
+  // Set your desired filename and MIME type
+  const fileName = file.name;
+  const fileMime = file.type;
+
+  // Create your File object
+  const uploadFile = new File([blob], fileName, { type: fileMime }); 
+  // console.log('file', file)
+  let openaiFile = await client.files.create({
+    file:uploadFile,
+    purpose: "fine-tune",
+  });
+
+  return {"fileID":openaiFile.id}
 }
 
 
-async function submitUserMessage(content: string) {
+async function submitUserMessage(content: string,fileObj:object) {
   'use server'
 
   const aiState = getMutableAIState<typeof AI>()
@@ -136,6 +152,7 @@ async function submitUserMessage(content: string) {
   })
   const status = createStreamableUI('thread.init');
   const text = createStreamableUI('');
+  // console.log('fileID', fileObj)
 
   let threadID = aiState.get().chatId
   let runId
@@ -144,11 +161,13 @@ async function submitUserMessage(content: string) {
     await client.beta.threads.messages.create(aiState.get().chatId, {
       role: 'user',
       content: content,
+      attachments:[{file_id:fileObj.fileID,tools:[{type:"code_interpreter"},{type:"file_search"}]}]
     });
 
     const run = await client.beta.threads.runs.create(threadID, {
       assistant_id: process.env.ASSISTANT_ID?process.env.ASSISTANT_ID:"",
       stream: true,
+      
     });
 
     runQueue.push({ id: nanoid(), run });
@@ -160,7 +179,7 @@ async function submitUserMessage(content: string) {
           const { data, event } = delta;
 
           status.update(event);
-          console.log('event', event)
+          // console.log('event', event)
 
           if (event === 'thread.created') {
             threadID = data.id;
@@ -171,12 +190,12 @@ async function submitUserMessage(content: string) {
               if (part.type === 'text') {
                 if (part.text) {
                   text.append(part.text.value);
-                  console.log('text', part.text.value)
+                  // console.log('text', part.text.value)
                 }
               }
             });
           } else if (event === 'thread.run.failed') {
-            console.log(data);
+            // console.log(data);
           }
         }
       }
@@ -184,7 +203,7 @@ async function submitUserMessage(content: string) {
 
     status.done();
     text.done();
-    console.log('text', text)
+    // console.log('text', text)
 
   })();
 
@@ -242,7 +261,7 @@ export const AI = createAI<AIState, UIState>({
       const userId = session.user.id as string
       const path = `/chat/${chatId}`
 
-      console.log('state', state)
+      // console.log('state', state)
 
       const firstMessageContent = messages[0].content as string
       const title = firstMessageContent.substring(0, 100)
