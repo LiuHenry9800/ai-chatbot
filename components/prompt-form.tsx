@@ -149,6 +149,7 @@ export function PromptForm({
               </Button>
               <input
                 type="file"
+                accept='.pdf,.md,.doc'
                 onChange={addFile}
                 ref={hiddenFileInput}
                 style={{display: 'none'}} // Make the file input element invisible
