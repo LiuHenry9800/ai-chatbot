@@ -116,25 +116,28 @@ async function confirmPurchase(symbol: string, price: number, amount: number) {
 async function uploadFile(data: FormData) {
   "use server";
   const file = data.get("file");
-  // Create a blob from your fileContents string
-  const blob = new Blob([file], { type: 'text/plain' });
-  // Set your desired filename and MIME type
-  const fileName = file.name;
-  const fileMime = file.type;
+  if (file instanceof File){
+    // Create a blob from your fileContents string
+    const blob = new Blob([file], { type: 'text/plain' });
+    // Set your desired filename and MIME type
+    const fileName = file.name;
+    const fileMime = file.type;
 
-  // Create your File object
-  const uploadFile = new File([blob], fileName, { type: fileMime }); 
-  // console.log('file', file)
-  let openaiFile = await client.files.create({
-    file:uploadFile,
-    purpose: "fine-tune",
-  });
+    // Create your File object
+    const uploadFile = new File([blob], fileName, { type: fileMime }); 
+    // console.log('file', file)
+    let openaiFile = await client.files.create({
+      file:uploadFile,
+      purpose: "fine-tune",
+    });
 
-  return {"fileID":openaiFile.id}
+    return {"fileID":openaiFile.id}
+  }
+
 }
 
 
-async function submitUserMessage(content: string,fileObj:object) {
+async function submitUserMessage(content: string,fileObj:{fileID:string}|null) {
   'use server'
 
   const aiState = getMutableAIState<typeof AI>()
